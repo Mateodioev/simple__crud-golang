@@ -11,9 +11,9 @@ import (
 )
 
 type task struct {
-	ID      int    `json:"ID"`
-	Name    string `json:"Name"`
-	Content string `json:"Content"`
+	ID      int    `json:"id"`
+	Name    string `json:"name"`
+	Content string `json:"content"`
 }
 
 type allTasks []task
@@ -39,6 +39,14 @@ func createTask(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println(err)
 	}
+	// Check if the task already exists
+	for _, t := range tasks {
+		if t.ID == task.ID {
+			w.WriteHeader(http.StatusConflict)
+			fmt.Fprintf(w, "Task already exists")
+			return
+		}
+	}
 	tasks = append(tasks, task)
 	json.NewEncoder(w).Encode(task)
 }
@@ -53,6 +61,7 @@ func deleteTask(w http.ResponseWriter, r *http.Request) {
 		if task.ID == id {
 			// delete task
 			tasks = append(tasks[:index], tasks[index+1:]...)
+			break // Delete only one task
 		}
 	}
 	json.NewEncoder(w).Encode(tasks)
